@@ -40,6 +40,11 @@ class Remote extends CI_Controller {
 		$ip_address = $this->input->post('ip_address');
 		
 		$respond = $this->UserModel->add($uuid, $membership, $code, $ip_address);
+		
+		if($respond['status'] == 'valid'){
+			
+		}
+		
 		echo json_encode($respond);
 	}
 	
