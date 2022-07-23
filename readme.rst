@@ -9,7 +9,7 @@ FGI PCC is shortest API for Parent Control Client usage - a very integrative com
 Main-Presentation (General)
 ****************************
 
-![Screenshot](preview.jpg)
+![Screenshot](_misc/preview.jpg)
 
 Please see the `main-presentation
 agreement <https://github.com/fgroupindonesia/fgi_pcc/skema_fgi_pcc.pdf>`_.
