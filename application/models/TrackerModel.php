@@ -37,7 +37,8 @@ class TrackerModel extends CI_Model {
 				'location_long'	=> $row->location_long,
 				'city'			=> $row->city,
 				'status_device'	=> $row->status_device,
-				'date_created'	=> $row->date_created
+				'date_created'	=> $row->date_created,
+				'date_modified'	=> $row->date_modified
 			);
 			
 			$endResult['multi_data'][] = $data;
@@ -71,7 +72,8 @@ class TrackerModel extends CI_Model {
 				'location_long'	=> $row->location_long,
 				'city'			=> $row->city,
 				'status_device'	=> $row->status_device,
-				'date_created'	=> $row->date_created
+				'date_created'	=> $row->date_created,
+				'date_modified'	=> $row->date_modified
 			);
 			
 			$endResult['multi_data'] = $data;
@@ -88,13 +90,15 @@ class TrackerModel extends CI_Model {
 	public function add($uuid, $location_lat, $location_long, $city, $status_device){
 		
 		$stat = 'invalid';
+		$tgl = date('Y-m-d H:i:s');
 		
 			$data = array(
 				'uuid'			=> $uuid,
 				'location_lat'	=> $location_lat,
 				'location_long'	=> $location_long,
 				'city'			=> $city,
-				'status_device'	=> $status_device
+				'status_device'	=> $status_device,
+				'date_created'	=> $tgl
 			);
 		
 		
@@ -116,8 +120,12 @@ class TrackerModel extends CI_Model {
 				'status_device'	=> $status_device
 		);
 		
-		
+		if(isset($id)){
 		$this->db->where('id', $id);
+		} else {
+		$this->db->where('uuid', $uuid);
+			
+		}
 		$this->db->update('data_trackers', $data);
 		
 		if($this->db->affected_rows() > 0){

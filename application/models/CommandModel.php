@@ -36,7 +36,8 @@ class CommandModel extends CI_Model {
 				'remote_uuid'	=> $row->remote_uuid,
 				'command'		=> $row->command,
 				'applied'		=> $row->applied,
-				'date_created'	=> $row->date_created
+				'date_created'	=> $row->date_created,
+				'date_modified'	=> $row->date_modified
 			);
 			
 			$endResult['multi_data'][] = $data;
@@ -50,7 +51,7 @@ class CommandModel extends CI_Model {
 		
 	}
 	
-	public function get($uuid){
+	public function get($uuid, $appliedStatus){
 		
 		$endResult = $this->generateRespond('invalid');
 		
@@ -61,7 +62,6 @@ class CommandModel extends CI_Model {
 		
 		foreach ($query->result() as $row)
 		{
-			$endResult['status'] = 'valid';
 			
 			$data = array(
 				'id' 			=> $row->id,
@@ -69,10 +69,15 @@ class CommandModel extends CI_Model {
 				'remote_uuid'	=> $row->remote_uuid,
 				'command'		=> $row->command,
 				'applied'		=> $row->applied,
-				'date_created'	=> $row->date_created
+				'date_created'	=> $row->date_created,
+				'date_modified'	=> $row->date_modified
 			);
 			
-			$endResult['multi_data'] = $data;
+			// take the same status 1 or 0
+			if($row->applied == $appliedStatus){
+				$endResult['status'] = 'valid';
+				$endResult['multi_data'] = $data;
+			}
 		}
 		
 		if($endResult['status'] == 'invalid'){
@@ -86,12 +91,14 @@ class CommandModel extends CI_Model {
 	public function add($client_uuid, $remote_uuid, $command, $applied){
 		
 		$stat = 'invalid';
+		$tgl = date('Y-m-d H:i:s');
 		
 			$data = array(
-				'client_uuid'	=> $row->client_uuid,
-				'remote_uuid'	=> $row->remote_uuid,
-				'command'		=> $row->command,
-				'applied'		=> $row->applied
+				'client_uuid'	=> $client_uuid,
+				'remote_uuid'	=> $remote_uuid,
+				'command'		=> $command,
+				'applied'		=> $applied,
+				'date_created'	=> $tgl
 			);
 		
 		
@@ -99,6 +106,30 @@ class CommandModel extends CI_Model {
 		$stat = 'valid';
 		
 		return $this->generateRespond($stat);
+	}
+
+	public function executed($id, $uuid){
+		
+		$endRes = $this->generateRespond('invalid');
+		
+		$data = array(
+				'applied'		=> 1
+			);
+		
+		if(isset($id)){
+			$this->db->where('id', $id);
+		} else {
+			$this->db->where('client_uuid', $uuid);
+		}
+		
+		$this->db->update('data_commands', $data);
+		
+		if($this->db->affected_rows() > 0){
+				$endRes = $this->generateRespond('valid');
+		}
+		
+		return $endRes;
+		
 	}
 
 	public function edit($id, $client_uuid, $remote_uuid, $command, $applied){

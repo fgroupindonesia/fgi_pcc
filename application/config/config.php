@@ -23,8 +23,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-//$config['base_url'] = 'http://api.fgic.fgroupindonesia.com';
-$config['base_url'] = 'http://fgipc.api.fgroupindonesia.com';
+$config['base_url'] = 'http://api.fgic.fgroupindonesia.com';
+//$config['base_url'] = 'http://fgipc.api.fgroupindonesia.com';
 
 /*
 |--------------------------------------------------------------------------

@@ -35,11 +35,58 @@ class UserModel extends CI_Model {
 				'uuid'			=> $row->uuid,
 				'ip_address'	=> $row->ip_address,
 				'membership'	=> $row->membership,
-				'code'			=> $row->code,
-				'date_created'	=> $row->date_created
+				'whatsapp'		=> $row->whatsapp,
+				'code'			=> $row->email,
+				'fullname'		=> $row->fullname,
+				'country'		=> $row->country,
+				'email'			=> $row->email,
+				'date_created'	=> $row->date_created,
+				'date_modified'	=> $row->date_modified
 			);
 			
 			$endResult['multi_data'][] = $data;
+		}
+		
+		if($endResult['status'] == 'invalid'){
+			unset($endResult['multi_data']);
+		}
+		
+		return $endResult;
+		
+	}
+	
+	public function getBy($col, $val){
+		
+		$endResult = $this->generateRespond('invalid');
+		
+		$this->db->order_by('id', 'DESC');
+		
+		$data = array(
+			$col => $val
+		);
+		
+		$this->db->where($data);
+		$query = $this->db->get('data_users');
+		
+		foreach ($query->result() as $row)
+		{
+			$endResult['status'] = 'valid';
+			
+			$data = array(
+				'id' 			=> $row->id,
+				'uuid'			=> $row->uuid,
+				'ip_address'	=> $row->ip_address,
+				'membership'	=> $row->membership,
+				'whatsapp'		=> $row->whatsapp,
+				'code'			=> $row->email,
+				'fullname'		=> $row->fullname,
+				'country'		=> $row->country,
+				'email'			=> $row->email,
+				'date_created'	=> $row->date_created,
+				'date_modified'	=> $row->date_modified
+			);
+			
+			$endResult['multi_data'] = $data;
 		}
 		
 		if($endResult['status'] == 'invalid'){
@@ -69,15 +116,27 @@ class UserModel extends CI_Model {
 		return $stat;
 	}
 	
-	public function add($uuid, $membership, $code, $ip_address){
+	public function add($uuid, $membership, $code, $ip_address, $country, $fullname, $wa, $email, $status, $tglMasuk){
 		
 		$stat = 'invalid';
+		
+		if(!isset($tglMasuk)){
+		$tgl = date('Y-m-d H:i:s');
+		}else{
+			$tgl = $tglMasuk;
+		}
 		
 			$data = array(
 				'uuid' 				=> $uuid,
 				'membership' 		=> $membership,
 				'code' 				=> $code,
-				'ip_address'		=> $ip_address
+				'country'			=> $country,
+				'fullname'			=> $fullname,
+				'whatsapp'				=> $wa,
+				'email'				=> $email,
+				'status'			=> $status,
+				'ip_address'		=> $ip_address,
+				'date_created'		=> $tgl
 			);
 		
 		$found = $this->checkDuplicate($uuid);
@@ -93,6 +152,25 @@ class UserModel extends CI_Model {
 		return $this->generateRespond($stat);
 	}
 
+	public function updateStatus($uuid, $status){
+		
+		$endRes = $this->generateRespond('invalid');
+		
+		$data = array(
+				'status'		=> $status
+		);
+		
+		$this->db->where('uuid', $uuid);
+		$this->db->update('data_users', $data);
+		
+		if($this->db->affected_rows() > 0){
+				$endRes = $this->generateRespond('valid');
+		}
+		
+		return $endRes;
+		
+	}
+
 	public function edit($id, $uuid, $membership, $code, $ip_address){
 		
 		$endRes = $this->generateRespond('invalid');
@@ -106,6 +184,28 @@ class UserModel extends CI_Model {
 		
 		
 		$this->db->where('id', $id);
+		$this->db->update('data_users', $data);
+		
+		if($this->db->affected_rows() > 0){
+				$endRes = $this->generateRespond('valid');
+		}
+		
+		return $endRes;
+		
+	}
+	
+	public function editByUUID($uuid, $fullname, $whatsapp, $email){
+		
+		$endRes = $this->generateRespond('invalid');
+		
+		$data = array(
+				'fullname' 				=> $fullname,
+				'email' 				=> $email,
+				'whatsapp' 				=> $whatsapp
+			);
+		
+		
+		$this->db->where('uuid', $uuid);
 		$this->db->update('data_users', $data);
 		
 		if($this->db->affected_rows() > 0){
