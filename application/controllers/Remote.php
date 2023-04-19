@@ -148,6 +148,36 @@ class Remote extends CI_Controller {
 		
 	}
 	
+	public function purchaseSerial(){
+		// making whatsapp link call
+		//https://wa.me/6285735501035?text=Isi Pesan
+		$lang = $this->input->get('language');
+		$uuid = $this->input->get('uuid');
+		
+		$message = "";
+		
+		if($lang == 'id'){
+		
+		$message = "Hello *Admin FGroupIndonesia*!" . urlencode("\n");
+		$message .= "saya : .....(tulis nama) " . urlencode("\n");
+		$message .= "dengan email : .... (tulis email) " . urlencode("\n");
+		$message .= "UUID aplikasi : *" . $uuid . "* " .urlencode("\n");
+		$message .= "ingin membeli Akses *Membership Premium Serial*" . urlencode("\n");
+		$message .= "untuk aplikasi Android *Parent Control*. Apakah masih tersedia?";
+		
+		}else{
+			$message = "Hello *Admin of FGroupIndonesia*!" . urlencode("\n");
+			$message .= "My name : .....(write your name) " . urlencode("\n");
+			$message .= "with email : .... (write your email) " . urlencode("\n");
+			$message .= "UUID app : *" . $uuid . "* " .urlencode("\n");
+			$message .= "want to purchase a Serial Number for *Premium Membership*" . urlencode("\n");
+			$message .= "for *Parent Control* - Android App. Is it still available?";
+		}
+		
+		$waBeliSerial = "https://wa.me/6285795569337?text=" . $message;
+		
+		redirect($waBeliSerial, 'refresh');
+	}
 	
 	public function registerClient(){
 		

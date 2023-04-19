@@ -56,6 +56,7 @@ $route['admin/close'] = 'Admin/closedAccess';
 $route['admin/open'] = 'Admin/openAccess';
 $route['admin/generate/license'] = 'License/generateNew';
 $route['activation/user'] = 'Client/activation';
+$route['remote/purchase/license'] = 'Remote/purchaseSerial';
 $route['remote/input/license'] = 'License/input';
 $route['remote/register/account'] = 'Remote/registerMe';
 $route['remote/register/client'] = 'Remote/registerClient';
