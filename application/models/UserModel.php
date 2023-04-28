@@ -97,6 +97,61 @@ class UserModel extends CI_Model {
 		
 	}
 	
+	public function verify($email, $wa, $uuid){
+		
+		$stat = 'invalid';
+		$endResult = $this->generateRespond($stat);
+
+		$cridential = array(
+			'whatsapp' => $wa,
+			'email'		=> $email
+		);
+
+		$this->db->where($cridential);
+		$query = $this->db->get('data_users');
+		$id = -1;
+		
+		foreach ($query->result() as $row)
+		{
+			$endResult['status'] = 'valid';
+			
+			$id = $row->id;
+			
+			$data = array(
+				'id' 			=> $row->id,
+				'fullname'		=> $row->fullname,
+				'email'			=> $row->email,
+				'uuid'			=> $row->uuid,
+				'whatsapp'		=> $row->whatsapp	
+			);
+			
+			$endResult['multi_data'] = $data;
+			break;
+		}
+		
+		$this->updateUUID($id, $uuid);
+		
+		return 	$endResult;
+	}
+	
+	private function updateUUID($id, $uuid){
+		
+		$endRes = $this->generateRespond('invalid');
+		
+		$data = array(
+				'uuid'		=> $uuid
+		);
+		
+		$this->db->where('id', $id);
+		$this->db->update('data_users', $data);
+		
+		if($this->db->affected_rows() > 0){
+				$endRes = $this->generateRespond('valid');
+		}
+		
+		return $endRes;
+		
+	}
 	
 	// used internally
 	private function checkDuplicate($uuid){
@@ -125,6 +180,8 @@ class UserModel extends CI_Model {
 		}else{
 			$tgl = $tglMasuk;
 		}
+		
+		$country = strtolower($country);
 		
 			$data = array(
 				'uuid' 				=> $uuid,
@@ -212,6 +269,18 @@ class UserModel extends CI_Model {
 				$endRes = $this->generateRespond('valid');
 		}
 		
+		return $endRes;
+		
+	}
+	
+	public function initialize($uuid){
+		
+		$endRes = $this->generateRespond('invalid');
+		
+		// we can switch the status but 
+		// at the moment nothing to do
+		$endRes = $this->checkDuplicate($uuid);
+	
 		return $endRes;
 		
 	}

@@ -30,11 +30,13 @@ class CommandModel extends CI_Model {
 		{
 			$endResult['status'] = 'valid';
 			
+			$dataCMD = $this->clearStrip($row->commands);
+			
 			$data = array(
 				'id' 			=> $row->id,
 				'client_uuid'	=> $row->client_uuid,
 				'remote_uuid'	=> $row->remote_uuid,
-				'command'		=> $row->command,
+				'commands'		=> $dataCMD,
 				'applied'		=> $row->applied,
 				'date_created'	=> $row->date_created,
 				'date_modified'	=> $row->date_modified
@@ -51,9 +53,43 @@ class CommandModel extends CI_Model {
 		
 	}
 	
-	public function get($uuid, $appliedStatus){
+	public function updateUUID($olduuid, $uuid){
+		
+		$endRes = $this->generateRespond('invalid');
+		
+		$data = array(
+				'remote_uuid'		=> $uuid
+		);
+		
+		$this->db->where('remote_uuid', $olduuid);
+		$this->db->update('data_commands', $data);
+		
+		if($this->db->affected_rows() > 0){
+				$endRes = $this->generateRespond('valid');
+		}
+		
+		return $endRes;
+		
+	}
+	
+	public function get($uuid, $appliedStatus, $modeCompleteness){
 		
 		$endResult = $this->generateRespond('invalid');
+		
+		
+		// 1 is COMPLETE
+		// 0 is SIMPLE
+		
+		// THIS IS COMPLETE {"status":"valid","multi_data":{"id":"5","client_uuid":"4B435451-394A-3043-4631-14DAE9AD8243","remote_uuid":"2222","command":{"restart":"true"},"applied":"0","date_created":"2023-04-20 10:59:29","date_modified":"2023-04-20 11:08:25"}}
+
+		// THIS IS SIMPLE
+		// {"status":"valid","multi_data":"command":{"restart":"true"}}
+		
+		$mode = 1;
+		
+		if(isset($modeCompleteness)){
+			$mode = $modeCompleteness;
+		}
 		
 		$this->db->order_by('id', 'DESC');
 		$this->db->where('client_uuid', $uuid);
@@ -63,15 +99,27 @@ class CommandModel extends CI_Model {
 		foreach ($query->result() as $row)
 		{
 			
+			$dataCMD = $this->clearStrip($row->commands);
+			
+			if($mode == 1){
+			
 			$data = array(
 				'id' 			=> $row->id,
 				'client_uuid'	=> $row->client_uuid,
 				'remote_uuid'	=> $row->remote_uuid,
-				'command'		=> $row->command,
+				'commands'		=> $dataCMD,
 				'applied'		=> $row->applied,
 				'date_created'	=> $row->date_created,
 				'date_modified'	=> $row->date_modified
 			);
+			
+			}else {
+				
+				$data = array(
+				'commands'		=> $dataCMD
+				);
+				
+			}
 			
 			// take the same status 1 or 0
 			if($row->applied == $appliedStatus){
@@ -88,6 +136,28 @@ class CommandModel extends CI_Model {
 		
 	}
 	
+	private function checkDuplicate($uuid_remote, $uuid_client){
+		
+		$stat = false;
+
+		$dataSelective = array(
+			'client_uuid' 	=> $uuid_client,
+			'remote_uuid'	=> $uuid_remote
+		);
+
+		$this->db->where($dataSelective);
+		$query = $this->db->get('data_commands');
+		
+		foreach ($query->result() as $row)
+		{
+			$stat = true;
+			break;
+		}
+		
+		
+		return $stat;
+	}
+	
 	public function add($client_uuid, $remote_uuid, $command, $applied){
 		
 		$stat = 'invalid';
@@ -96,14 +166,15 @@ class CommandModel extends CI_Model {
 			$data = array(
 				'client_uuid'	=> $client_uuid,
 				'remote_uuid'	=> $remote_uuid,
-				'command'		=> $command,
+				'commands'		=> $command,
 				'applied'		=> $applied,
 				'date_created'	=> $tgl
 			);
 		
-		
-		$this->db->insert('data_commands', $data);
-		$stat = 'valid';
+		if(!$this->checkDuplicate($remote_uuid, $client_uuid)){
+			$this->db->insert('data_commands', $data);
+			$stat = 'valid';
+		}
 		
 		return $this->generateRespond($stat);
 	}
@@ -132,19 +203,21 @@ class CommandModel extends CI_Model {
 		
 	}
 
-	public function edit($id, $client_uuid, $remote_uuid, $command, $applied){
+	public function edit($client_uuid, $remote_uuid, $command, $applied){
 		
 		$endRes = $this->generateRespond('invalid');
 		
 		$data = array(
-				'client_uuid'	=> $client_uuid,
-				'remote_uuid'	=> $remote_uuid,
-				'command'		=> $command,
+				'commands'		=> $command,
 				'applied'		=> $applied
 			);
 		
+		$lookFor = array(
+				'client_uuid'	=> $client_uuid,
+				'remote_uuid'	=> $remote_uuid
+		);
 		
-		$this->db->where('id', $id);
+		$this->db->where($lookFor);
 		$this->db->update('data_commands', $data);
 		
 		if($this->db->affected_rows() > 0){
@@ -153,6 +226,29 @@ class CommandModel extends CI_Model {
 		
 		return $endRes;
 		
+	}
+	
+	
+	function reverse_mysqli_real_escape_string($str) {
+		return strtr($str, [
+			'\0'   => "\x00",
+			'\n'   => "\n",
+			'\r'   => "\r",
+			'\\\\' => "\\",
+			"\'"   => "'",
+			'\"'   => '"',
+			'\Z' => "\x1a"
+		]);
+	}
+	
+	private function clearStrip($data){
+		// we clear everything so it's safer to be consumed by
+			// the next generation
+			$dt = $this->reverse_mysqli_real_escape_string($data);
+			$dt = stripslashes($dt);
+			$dt = json_decode($dt);
+			
+			return $dt;
 	}
 	
 }

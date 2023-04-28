@@ -18,6 +18,25 @@ class LicenseModel extends CI_Model {
 		return $stat;
 	}
 	
+	public function updateUUID($olduuid, $uuid){
+		
+		$endRes = $this->generateRespond('invalid');
+		
+		$data = array(
+				'uuid'		=> $uuid
+		);
+		
+		$this->db->where('uuid', $olduuid);
+		$this->db->update('data_licenses', $data);
+		
+		if($this->db->affected_rows() > 0){
+				$endRes = $this->generateRespond('valid');
+		}
+		
+		return $endRes;
+		
+	}
+	
 	public function getAll(){
 		
 		$endResult = $this->generateRespond('invalid');

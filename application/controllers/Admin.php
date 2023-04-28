@@ -25,4 +25,10 @@ class Admin extends CI_Controller {
 	
 		echo json_encode($end);
 	}
+	
+	public function index()
+	{
+		$this->load->view('welcome_message');
+	}
+	
 }

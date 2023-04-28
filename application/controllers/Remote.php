@@ -12,10 +12,11 @@ class Remote extends CI_Controller {
 			$this->load->model('IPModel');
 			$this->load->model('EmailModel');
 			$this->load->model('TokenModel');
+			$this->load->model('LicenseModel');
 	}
 
 	public function test(){
-		echo "-remoteXXss-";
+		echo "-remote-";
 	}
 
 	public function index()
@@ -23,30 +24,71 @@ class Remote extends CI_Controller {
 		$this->load->view('welcome_message');
 	}
 	
+	private function escapedString($val){
+		
+		$db = get_instance()->db->conn_id;
+		$val = mysqli_real_escape_string($db, $val);
+		return $val;
+	
+	}
+	
 	public function initialize(){
 		
-		$uuid 			= $this->input->post('uuid');
-		$ip_address 	= $this->input->post('ip_address');
-		$membership 	= $this->input->post('membership');
-		$code 			= $this->input->post('code');
+		// just say 'valid' if exist that's all!
+		// instead of 'invalid' :D
 		
-		$respond = $this->UserModel->add($uuid, $membership, $code, $ip_address);
+		$uuid 			= $this->input->post('uuid');
+		
+		$respond = $this->UserModel->initialize($uuid);
+		echo json_encode($respond);
+		
+	}
+	
+	public function login(){
+		
+		// return back the login cridentials
+		// otherwise say -> 'invalid'
+		
+		$email 			= $this->input->post('email');
+		$wa 			= $this->input->post('whatsapp');
+		$uuid 			= $this->input->post('uuid');
+
+		
+		$respond = $this->UserModel->verify($email, $wa, $uuid);
+		
+		
+		if($respond['status'] == 'valid'){
+			$oldUUID = $respond['multi_data']['uuid'];
+			// update the next tables needed for this uuid
+			$remoteUUID = $uuid;
+			$this->CommandModel->updateUUID($oldUUID, $remoteUUID);
+			$this->LicenseModel->updateUUID($oldUUID, $remoteUUID);
+		}
+		
 		echo json_encode($respond);
 		
 	}
 	
 	public function sendCommand(){
 		
-		$id 		= $this->input->post('id');
+		
 		$client_uuid 		= $this->input->post('uuid_client');
 		$remote_uuid 		= $this->input->post('uuid_remote');
 		
+		// command sent is json-array of several objects
+		// {"command": "", "data":""}, etc....
+		
 		$command 		= $this->input->post('command');
+		
+		// make it as string
+		$command = json_encode($command);
+		// and make it applicable for non-injection SQL attack
+		//$command = $this->escapedString($command);
 		
 		// with status of 0 : pending
 		$applied 		= '0';
 		
-		$respond = $this->CommandModel->edit($id, $client_uuid, $remote_uuid, $command, $applied);
+		$respond = $this->CommandModel->edit($client_uuid, $remote_uuid, $command, $applied);
 	
 		echo json_encode($respond);
 		
@@ -161,16 +203,16 @@ class Remote extends CI_Controller {
 		$message = "Hello *Admin FGroupIndonesia*!" . urlencode("\n");
 		$message .= "saya : .....(tulis nama) " . urlencode("\n");
 		$message .= "dengan email : .... (tulis email) " . urlencode("\n");
-		$message .= "UUID aplikasi : *" . $uuid . "* " .urlencode("\n");
-		$message .= "ingin membeli Akses *Membership Premium Serial*" . urlencode("\n");
+		$message .= "UUID aplikasi : *" . $uuid . "* " .urlencode("\n\n");
+		$message .= "saya ingin membeli Akses *Membership Premium Serial*" . urlencode("\n");
 		$message .= "untuk aplikasi Android *Parent Control*. Apakah masih tersedia?";
 		
 		}else{
 			$message = "Hello *Admin of FGroupIndonesia*!" . urlencode("\n");
 			$message .= "My name : .....(write your name) " . urlencode("\n");
 			$message .= "with email : .... (write your email) " . urlencode("\n");
-			$message .= "UUID app : *" . $uuid . "* " .urlencode("\n");
-			$message .= "want to purchase a Serial Number for *Premium Membership*" . urlencode("\n");
+			$message .= "UUID app : *" . $uuid . "* " .urlencode("\n\n");
+			$message .= "I want to purchase a Serial Number for *Premium Membership*" . urlencode("\n");
 			$message .= "for *Parent Control* - Android App. Is it still available?";
 		}
 		
@@ -179,47 +221,56 @@ class Remote extends CI_Controller {
 		redirect($waBeliSerial, 'refresh');
 	}
 	
+	public function askhelp(){
+		// making whatsapp link call
+		//https://wa.me/6285735501035?text=Isi Pesan
+		$lang = $this->input->get('language');
+		$uuid = $this->input->get('uuid');
+		
+		$message = "";
+		
+		if($lang == 'id'){
+		
+		$message = "Hello *Admin FGroupIndonesia*!" . urlencode("\n");
+		$message .= "saya : .....(tulis nama) " . urlencode("\n");
+		$message .= "dengan UUID aplikasi : *" . $uuid . "* " .urlencode("\n\n");
+		$message .= " saya ini baru saja menggunakan aplikasi Android *Parent Control*. Dan butuh bantuan...";
+		
+		}else{
+			$message = "Hello *Admin of FGroupIndonesia*!" . urlencode("\n");
+			$message .= "My name : .....(write your name) " . urlencode("\n");
+			$message .= "with UUID app : *" . $uuid . "* " .urlencode("\n\n");
+			$message .= " I just used the *Parent Control* - Android App recently. And now, I need some help...";
+		}
+		
+		$waAdmin = "https://wa.me/6285795569337?text=" . $message;
+		
+		redirect($waAdmin, 'refresh');
+	}
+	
+	// the client is already registered by itself
+	// once the desktop is clicked ON (mode : GLOBAL)
+	// thus remote only call here the command for preparation
 	public function registerClient(){
 		
+		// taken from Camera of QRCode
 		$client_uuid 		= $this->input->post('uuid_client');
+		$ip_address 		= $this->input->post('ip_address');
+		
+		// taken from Remote Device (android)
 		$remote_uuid 		= $this->input->post('uuid_remote');
-		
-		$membership = $this->input->post('membership');
-		$code 		= $this->input->post('code');
-		$ip_address = $this->input->post('ip_address');
-		
-		$country		= $this->input->post('country');
-		$location_lat 	= $this->input->post('location_lat');
-		$location_long 	= $this->input->post('location_long');
-		$city			= $this->input->post('city');
-		
-		// status :
-		// - active
-		// - pending
-		// - disabled
-		
-		$status_device = 'active';
-		
+	
 		// empty command for first registration
-		$command = ''; // command will be vary but using csv format : kill-app, restart, etc
+		// later will be added accordingly
+		$command = '[]'; 
+		// command will be vary but using JSON format : 
+		// check the documentation for more INFO
+		
 		$applied = '0'; // values are 0 - pending, 1 - executed
 		
-		$tglMasuk = date('Y-m-d H:i:s');
+		//$tglMasuk = date('Y-m-d H:i:s');
 		
-		$fullname = "";
-		$wa = "";
-		$email = "";
-		
-		$respond = $this->UserModel->add($client_uuid, $membership, $code, $ip_address, $country, $fullname, $wa, $email, $status_device, $tglMasuk);
-		
-		if($respond['status'] == 'valid'){
-		
-		$this->CommandModel->add($client_uuid, $remote_uuid, $command, $applied);
-		
-		// and also the coordinates of the device at the moment
-		$respond = $this->TrackerModel->add($client_uuid, $location_lat, $location_long, $city, $status_device);
-		
-		}
+		$respond = $this->CommandModel->add($client_uuid, $remote_uuid, $command, $applied);
 		
 		echo json_encode($respond);
 	}

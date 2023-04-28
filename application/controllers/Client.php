@@ -29,16 +29,35 @@ class Client extends CI_Controller {
 	
 	public function initialize(){
 		
-		// we got the posted string from client
-		// such as uuid combined with date
-		// thus we saved them into db
-		//echo "Y";
+	
 		$uuid 		= $this->input->post('uuid');
 		$membership = $this->input->post('membership');
 		$code 		= $this->input->post('code');
 		$ip_address = $this->input->post('ip_address');
 		
-		$respond = $this->UserModel->add($uuid, $membership, $code, $ip_address);
+		
+		$dataIP = $this->IPModel->getMyIP('testing');
+		
+		$city = $this->IPModel->getMyCity();
+		
+		$status_device = 1;
+		$status_user = "active";
+		
+		$loc = $this->IPModel->getMyLocation();
+		$location_lat = explode("," , $loc)[0];
+		$location_long = explode("," , $loc)[1];
+		
+		$country = $this->IPModel->getMyCountry();
+		
+		$fullname = "";
+		$wa 	= "";
+		$email  = "";
+		
+		$respond  = $this->UserModel->add($uuid, $membership, $code, $ip_address, $country, $fullname, $wa, $email, $status_user, null);
+		
+		// continue to post the tracking position
+		$respond = $this->TrackerModel->add($uuid, $location_lat, $location_long, $city, $status_device);
+		
 		echo json_encode($respond);
 	}
 	
@@ -69,17 +88,32 @@ class Client extends CI_Controller {
 		
 		$uuid = $this->input->post('uuid');
 		
+		// we need complete one or not?
+		// 1 = COMPLETE -> default
+		// 0 = SIMPLE
+		$mode = $this->input->post('mode');
+		
 		// only get the 0 applied status
 		$applied = 0;
- 		$respond =	$this->CommandModel->get($uuid, $applied);
+ 		$respond =	$this->CommandModel->get($uuid, $applied, $mode);
 		
-		if($respond['status'] == 'valid'){
-			// we assume this client executing the command properly
-			$id = $respond['multi_data']['id'];
-			$respond =	$this->CommandModel->executed($id, $uuid);
-		}
 		
+		
+		// THIS IS COMPLETE {"status":"valid","multi_data":{"id":"5","client_uuid":"4B435451-394A-3043-4631-14DAE9AD8243","remote_uuid":"2222","command":{"restart":"true"},"applied":"0","date_created":"2023-04-20 10:59:29","date_modified":"2023-04-20 11:08:25"}}
+
+		// THIS IS SIMPLE
+		// {"status":"valid","multi_data":"command":{"restart":"true"}}
+
+		
+		// we show the client for the message
 		echo json_encode($respond);
+		
+		// and continue 
+		// if($respond['status'] == 'valid'){
+		// we assume this client executing the command properly
+		//	$id = $respond['multi_data']['id'];
+		//	$respond =	$this->CommandModel->executed($id, $uuid);
+		// }
 		
 	}
 	
@@ -89,7 +123,7 @@ class Client extends CI_Controller {
 		$id = $this->input->post('id');
 		
 			// we assume this client executing the command properly
-			
+			// so the applied will become 1 inside model
 			$respond =	$this->CommandModel->executed($id, $uuid);
 		
 		

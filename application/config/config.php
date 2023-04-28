@@ -23,7 +23,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
+//$config['base_url'] = 'http://localhost';
+
+// usage : local testing
 $config['base_url'] = 'http://api.fgic.fgroupindonesia.com';
+
+// usage : real ALIVE
 //$config['base_url'] = 'http://fgipc.api.fgroupindonesia.com';
 
 /*

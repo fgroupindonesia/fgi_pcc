@@ -9,6 +9,32 @@ class IPModel extends CI_Model {
 		
 	}
 	
+	private $dataClient;
+	
+	public function getMyCity(){
+		if(isset($this->dataClient)){
+				return	$this->dataClient['city'];
+		}
+		
+		return "";
+	}
+	
+	public function getMyCountry(){
+		if(isset($this->dataClient)){
+				return	$this->dataClient['country'];
+		}
+		
+		return "";
+	}
+	
+	public function getMyLocation(){
+		if(isset($this->dataClient)){
+				return	$this->dataClient['loc'];
+		}
+		
+		return "";
+	}
+	
 	public function getMyIP($usage){
 		// API ACCESS for FREE
 		// https://ipinfo.io/103.147.9.19?token=bdd372b62f27d7
@@ -56,6 +82,9 @@ class IPModel extends CI_Model {
 		
 		$details = json_decode(file_get_contents("https://ipinfo.io/{$ip}?token=bdd372b62f27d7"), true);
 		//echo json_encode($details);
+		
+		// store it locally for next call
+		$this->dataClient = $details;
 		
 		return $details;
 	}
