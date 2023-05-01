@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 20, 2023 at 01:55 AM
+-- Generation Time: May 01, 2023 at 05:31 PM
 -- Server version: 5.5.39
 -- PHP Version: 7.3.27
 
@@ -31,7 +31,7 @@ CREATE TABLE `data_commands` (
   `id` int(10) UNSIGNED NOT NULL,
   `client_uuid` varchar(75) NOT NULL,
   `remote_uuid` varchar(75) NOT NULL,
-  `command` varchar(200) NOT NULL,
+  `commands` varchar(1000) NOT NULL,
   `applied` tinyint(1) NOT NULL,
   `date_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `date_created` datetime NOT NULL
@@ -41,10 +41,12 @@ CREATE TABLE `data_commands` (
 -- Dumping data for table `data_commands`
 --
 
-INSERT INTO `data_commands` (`id`, `client_uuid`, `remote_uuid`, `command`, `applied`, `date_modified`, `date_created`) VALUES
+INSERT INTO `data_commands` (`id`, `client_uuid`, `remote_uuid`, `commands`, `applied`, `date_modified`, `date_created`) VALUES
 (1, '665', '45', 'restart,shutdown,kill-app', 1, '2022-07-23 17:36:55', '2023-04-11 13:35:23'),
 (2, '775', '45', '', 0, '2022-07-24 10:00:12', '2023-04-04 13:35:27'),
-(3, '2222', '123', '', 0, '2023-04-18 00:15:48', '2023-04-18 07:15:48');
+(3, '2222', '123', '', 0, '2023-04-18 00:15:48', '2023-04-18 07:15:48'),
+(26, '99995451-394A-3043-4631-14DAE9AD8243', 'D656258B-0354-4DDC-AA94-2F89ADC4E320', '[\"\\\"{\\\\\\\"command\\\\\\\": \\\\\\\"mute_audio\\\\\\\", \\\\\\\"data\\\\\\\":\\\\\\\"true\\\\\\\"}\\\"\"]', 0, '2023-05-01 15:29:00', '2023-05-01 06:47:05'),
+(27, '4B435451-394A-3043-4631-14DAE9AD8243', 'D656258B-0354-4DDC-AA94-2F89ADC4E320', '[]', 0, '2023-05-01 15:25:13', '2023-05-01 06:47:09');
 
 -- --------------------------------------------------------
 
@@ -67,7 +69,7 @@ CREATE TABLE `data_licenses` (
 --
 
 INSERT INTO `data_licenses` (`id`, `uuid`, `serial_number`, `email`, `whatsapp`, `date_modified`, `date_created`) VALUES
-(1, '22', '4r0-bffAFq', 'sesuatu@home.com', '08123', '2022-07-23 16:05:49', '2023-04-04 10:33:25');
+(1, 'D656258B-0354-4DDC-AA94-2F89ADC4E320', '4r0-bffAFq', 'sesuatu@home.com', '08123', '2023-04-29 07:51:49', '2023-04-04 10:33:25');
 
 -- --------------------------------------------------------
 
@@ -113,7 +115,8 @@ CREATE TABLE `data_trackers` (
 
 INSERT INTO `data_trackers` (`id`, `uuid`, `location_lat`, `location_long`, `city`, `status_device`, `date_modified`, `date_created`) VALUES
 (1, '775', '999.99999999', '-10.00000000', 'bandung', 0, '2022-07-24 10:05:44', '2023-04-10 00:00:00'),
-(2, '2222', '19.11100000', '12.33300000', 'jakarta', 1, '2023-04-18 00:15:48', '2023-04-18 07:15:48');
+(2, '2222', '19.11100000', '12.33300000', 'jakarta', 1, '2023-04-18 00:15:48', '2023-04-18 07:15:48'),
+(4, '4B435451-394A-3043-4631-14DAE9AD8243', '-6.92220000', '107.60690000', 'Bandung', 1, '2023-04-20 03:47:35', '2023-04-20 10:47:35');
 
 -- --------------------------------------------------------
 
@@ -149,7 +152,8 @@ INSERT INTO `data_users` (`id`, `uuid`, `ip_address`, `membership`, `code`, `cou
 (6, '665', '112.123.123.123', 1, 0, '', '', '', '', '', '2022-07-23 17:10:25', '2023-04-05 13:24:59'),
 (7, '775', '192.123.123.123', 0, 0, '', '', '', '', '', '2022-07-24 10:00:12', '2023-04-05 13:25:02'),
 (15, '123', '103.147.9.19', 0, 1, 'id', 'menang@selalu.com', '1111', 'michael jackson', 'active', '2023-04-18 00:03:34', '2023-04-18 06:13:14'),
-(16, '2222', '111.111.111.111', 0, 0, 'id', '', '', '', 'active', '2023-04-18 00:16:51', '2023-04-18 07:15:48');
+(16, 'D656258B-0354-4DDC-AA94-2F89ADC4E320', '111.111.111.111', 0, 0, 'id', 'udin@home.com', '081234', 'udin keren', 'active', '2023-04-29 09:12:44', '2023-04-18 07:15:48'),
+(18, '4B435451-394A-3043-4631-14DAE9AD8243', '192.168.0.14', 0, 0, 'id', '', '', '', 'active', '2023-04-20 03:47:35', '2023-04-20 10:47:35');
 
 --
 -- Indexes for dumped tables
@@ -193,7 +197,7 @@ ALTER TABLE `data_users`
 -- AUTO_INCREMENT for table `data_commands`
 --
 ALTER TABLE `data_commands`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `data_licenses`
@@ -211,13 +215,13 @@ ALTER TABLE `data_tokens`
 -- AUTO_INCREMENT for table `data_trackers`
 --
 ALTER TABLE `data_trackers`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `data_users`
 --
 ALTER TABLE `data_users`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
