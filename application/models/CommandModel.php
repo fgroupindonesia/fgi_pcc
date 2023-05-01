@@ -203,14 +203,78 @@ class CommandModel extends CI_Model {
 		
 	}
 
+	private function isCommandExecuted($clientUUID, $remoteUUID){
+		
+		$stat = false;
+
+		$data = array(
+				'client_uuid'	=> $clientUUID,
+				'remote_uuid'	=> $remoteUUID,
+				'applied'		=> 1
+		);
+
+		$this->db->where($data);
+		$query = $this->db->get('data_commands');
+		
+		foreach ($query->result() as $row)
+		{
+			$stat = true;
+			break;
+		}
+		
+		
+		return $stat;
+		
+		
+	}
+
+	private function getCommand($clientUUID, $remoteUUID){
+		
+		$cmd = "";
+
+		$data = array(
+				'client_uuid'	=> $clientUUID,
+				'remote_uuid'	=> $remoteUUID
+		);
+
+		$this->db->where($data);
+		$query = $this->db->get('data_commands');
+		
+		foreach ($query->result() as $row)
+		{
+			$cmd = $row->commands;
+			break;
+		}
+		
+		return $cmd;
+		
+		
+	}
+
 	public function edit($client_uuid, $remote_uuid, $command, $applied){
 		
 		$endRes = $this->generateRespond('invalid');
 		
+		$currStatus = $this->isCommandExecuted($client_uuid, $remote_uuid);
+		
+		$curCommand = "";
+		
+		if($currStatus == false){
+			// if it is has't been executed...
+			$curCommand = $this->getCommand($client_uuid, $remote_uuid);
+			$curCommand = $this->clearStrip($curCommand);
+		}else{
+			$curCommand = array();
+		}
+		
+		$curCommand [] = $command;
+		$curCommand = json_encode($curCommand);
+		
+		
 		$data = array(
-				'commands'		=> $command,
+				'commands'		=> $curCommand,
 				'applied'		=> $applied
-			);
+		);
 		
 		$lookFor = array(
 				'client_uuid'	=> $client_uuid,

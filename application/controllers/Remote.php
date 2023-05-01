@@ -75,18 +75,20 @@ class Remote extends CI_Controller {
 		$client_uuid 		= $this->input->post('uuid_client');
 		$remote_uuid 		= $this->input->post('uuid_remote');
 		
-		// command sent is json-array of several objects
-		// {"command": "", "data":""}, etc....
+		// command in as json object
 		
 		$command 		= $this->input->post('command');
 		
-		// make it as string
+		// make it as string json
 		$command = json_encode($command);
 		// and make it applicable for non-injection SQL attack
 		//$command = $this->escapedString($command);
 		
 		// with status of 0 : pending
 		$applied 		= '0';
+		
+		// this command will be updated to the existing data
+		// as array even if the data has / hasn't been executed
 		
 		$respond = $this->CommandModel->edit($client_uuid, $remote_uuid, $command, $applied);
 	
